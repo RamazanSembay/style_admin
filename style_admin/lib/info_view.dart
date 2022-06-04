@@ -1,14 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class InfoView extends StatelessWidget {
+  final String id;
   final String name;
 
   final String city;
   final String address;
   final String number;
 
-  const InfoView({Key key, this.name, this.city, this.address, this.number})
+  const InfoView(
+      {Key key, this.id, this.name, this.city, this.address, this.number})
       : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -179,22 +183,49 @@ class InfoView extends StatelessWidget {
                         SizedBox(height: 20),
                         Expanded(
                           child: Container(
-                            child: ListView(
-                              physics: BouncingScrollPhysics(),
-                              children: [
-                                Column(
-                                  children: [
-                                    PersonProduct(
-                                      name: 'Футболка полуприлегающего силуэта',
-                                      image:
-                                          'https://image.12storeez.com/images/720xP_90_out/uploads/images/LookBook/15-3-22/6230506dabc23-04-000007890021.jpg',
-                                      count: 2,
-                                      price: 12000,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                            child: StreamBuilder<QuerySnapshot>(
+                                stream: FirebaseFirestore.instance
+                                    .collection('Себет')
+                                    .doc(id)
+                                    .collection('Себет')
+                                    .snapshots(),
+                                builder: (context,
+                                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                                  if (snapshot.hasError) {
+                                    return Text('Something went wrong');
+                                  }
+
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 40),
+                                      child: Center(
+                                          child: CircularProgressIndicator()),
+                                    );
+                                  }
+
+                                  return ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: BouncingScrollPhysics(),
+                                    scrollDirection: Axis.vertical,
+                                    itemCount: snapshot.data.docs.length,
+                                    itemBuilder: (context, index) {
+                                      var data = snapshot.data.docs[index];
+
+                                      return Column(
+                                        children: [
+                                          PersonProduct(
+                                            name: data['Название'],
+                                            image: data['Картинка'],
+                                            count: data['Количество'],
+                                            price: data['Цена'],
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                }),
                           ),
                         ),
                       ],

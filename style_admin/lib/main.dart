@@ -96,6 +96,7 @@ class HomePage extends StatelessWidget {
                                 onInfo: () {
                                   // on info
                                   Get.to(InfoView(
+                                    id: data['Id'],
                                     name: data['Имя'],
                                     city: data['Город'],
                                     address: data['Адрес'],

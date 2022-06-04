@@ -95,7 +95,12 @@ class HomePage extends StatelessWidget {
                                 price: data['Сумма товара'],
                                 onInfo: () {
                                   // on info
-                                  Get.to(InfoView());
+                                  Get.to(InfoView(
+                                    name: data['Имя'],
+                                    city: data['Город'],
+                                    address: data['Адрес'],
+                                    number: data['Дом'],
+                                  ));
                                 },
                               );
                             },

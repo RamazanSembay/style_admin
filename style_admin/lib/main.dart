@@ -1,11 +1,16 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:style_admin/checkout_view.dart';
+import 'package:style_admin/info_view.dart';
 import 'package:style_admin/provider/cart_provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(Application());
 }
 
@@ -54,12 +59,56 @@ class HomePage extends StatelessWidget {
         elevation: 1,
       ),
       backgroundColor: Colors.grey.shade200,
-      body: ListView.builder(
-        itemCount: 1,
-        padding: EdgeInsets.only(top: 8, bottom: 8),
-        itemBuilder: (context, index) {
-          return CheckoutView();
-        },
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Container(
+              child: Column(
+                children: [
+                  FutureBuilder<QuerySnapshot>(
+                    future:
+                        FirebaseFirestore.instance.collection('Себет').get(),
+                    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasError) {
+                        return Text('Something went wrong');
+                      }
+
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+
+                      return Expanded(
+                        child: Container(
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            physics: BouncingScrollPhysics(),
+                            scrollDirection: Axis.vertical,
+                            itemCount: snapshot.data.docs.length,
+                            itemBuilder: (context, index) {
+                              var data = snapshot.data.docs[index];
+
+                              return CheckoutView(
+                                name: data['Имя'],
+                                street: data['Адрес'],
+                                home: data['Дом'],
+                                price: data['Сумма товара'],
+                                onInfo: () {
+                                  // on info
+                                  Get.to(InfoView());
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

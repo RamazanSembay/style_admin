@@ -1,5 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 import 'package:style_admin/checkout_view.dart';
+import 'package:style_admin/provider/cart_provider.dart';
 
 void main() {
   runApp(Application());
@@ -8,9 +12,25 @@ void main() {
 class Application extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomePage(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<CartProvider>(
+          create: (context) => (CartProvider()),
+        ),
+      ],
+      child: GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: StreamBuilder(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return HomePage();
+            } else {
+              return HomePage();
+            }
+          },
+        ),
+      ),
     );
   }
 }
